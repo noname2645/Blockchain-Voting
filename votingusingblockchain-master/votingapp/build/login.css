@@ -1,0 +1,337 @@
+*{
+    margin:0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+#logo{
+    margin-right:78vw;
+    /* border: 2px solid greenyellow; */
+    width: 20vw;
+  }
+
+  section{
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: #390071;
+    overflow: hidden;
+  }
+  section .air{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: url(https://1.bp.blogspot.com/-xQUc-TovqDk/XdxogmMqIRI/AAAAAAAACvI/AizpnE509UMGBcTiLJ58BC6iViPYGYQfQCLcBGAsYHQ/s1600/wave.png);
+    background-size: 1000px 100px
+  }
+  section .air.air1{
+    animation: wave 30s linear infinite;
+    z-index: 1000;
+    opacity: 1;
+    animation-delay: 0s;
+    bottom: 0;
+  }
+  section .air.air2{
+    animation: wave2 15s linear infinite;
+    z-index: 999;
+    opacity: 0.5;
+    animation-delay: -5s;
+    bottom: 10px;
+  }
+  section .air.air3{
+    animation: wave 30s linear infinite;
+    z-index: 998;
+    opacity: 0.2;
+    animation-delay: -2s;
+    bottom: 15px;
+  }
+  section .air.air4{
+    animation: wave2 5s linear infinite;
+    z-index: 997;
+    opacity: 0.7;
+    animation-delay: -5s;
+    bottom: 20px;
+  }
+  @keyframes wave{
+    0%{
+      background-position-x: 0px; 
+    }
+    100%{
+      background-position-x: 1000px; 
+    }
+  }
+  @keyframes wave2{
+    0%{
+      background-position-x: 0px; 
+    }
+    100%{
+      background-position-x: -1000px; 
+    }
+  }
+  
+  #logo{
+    /* margin-top: 1vh; */
+    margin-right:78vw;
+    /* border: 2px solid greenyellow; */
+    width: 20vw;
+    z-index: 1000;
+  }
+  
+  
+  
+  /* From Uiverse.io by AnthonyPreite */ 
+  #form {
+    display: grid;
+    place-items: center;
+    width: 300px;
+    height: 472px;
+    padding: 25px;
+    background-color: #161616;
+    box-shadow: 0px 20px 60px 10px #9125cf;
+    outline: 2px solid #000989;
+    border-radius: 10px;
+    margin-left: 38em;
+    /* margin-top: 4em; */
+  }
+  
+  #form-body {
+    position: absolute;
+    width: 230px;
+  }
+  
+  #welcome-lines {
+    text-align: center;
+    line-height: 1;
+    color: #00b3ff;
+    font-weight: 600;
+    font-size: 40px;
+  }
+  
+  #input-area {
+    margin-top: 40px;
+  }
+  
+  .form-inp {
+    padding: 0.9em;
+    font-size: 0.7em;
+    background: transparent;
+    border: 1px solid #e3e3e3;
+    line-height: 1;
+    border-radius: 8px;
+  }
+  
+  .form-inp:focus {
+    border: 1px solid #00FF7F;
+  }
+  
+  .form-inp:first-child {
+    margin-bottom: 10px;
+  }
+  
+  
+  .form-inp input {
+    width: 100%;
+    background: none;
+    font-size: 13.4px;
+    color: #00FF7F;
+    border: none;
+    padding: 0;
+    margin: 0;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+  
+  .form-inp input:focus {
+    outline: none;
+  }
+  
+  #submit-button-cvr {
+    margin-top: 14vh;
+  }
+  
+  #submit-button {
+    display: block;
+    width: 100%;
+    color: #00FF7F;
+    background-color: transparent;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0;
+    padding: 14px 13px 12px 13px;
+    border: 0;
+    outline: 1px solid #00FF7F;
+    border-radius: 8px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all ease-in-out .3s;
+    letter-spacing: 2px;
+  }
+  
+  #submit-button:hover {
+    transition: all ease-in-out .3s;
+    background-color: #00FF7F;
+    color: #161616;
+    cursor: pointer;
+  }
+  
+  #forgot-pass {
+    text-align: center;
+    margin-top: 10px;
+  }
+  
+  #forgot-pass a {
+    color: #868686;
+    font-size: 12px;
+    text-decoration: none;
+  }
+  
+  #bar {
+    position: absolute;
+    left: 50%;
+    bottom: -50px;
+    width: 28px;
+    height: 8px;
+    margin-left: -33px;
+    background-color: #00FF7F;
+    border-radius: 10px;
+  }
+  
+  #bar:before,
+  #bar:after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: #ececec;
+    border-radius: 50%;
+  }
+  
+  #bar:before {
+    right: -20px;
+  }
+  
+  #bar:after {
+    right: -38px;
+  }
+  
+  /* notification UI */
+  .center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Varela Round', sans-serif;
+    font-size: 1.3em;
+    font-weight: 600;
+    letter-spacing: 2px;
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    z-index: 10000;
+  }
+  
+  .check, .danger {
+    border-radius: 5px;
+    display: none; 
+    text-align: left;
+    align-items: center;
+    padding: 10px;
+    box-shadow:  10px 10px 15px rgba(0, 0, 0, 0.5);
+    color: rgb(210, 210, 210);
+    width: 15vw;
+    margin-left: 60vw;
+    /* margin-top: 1vh; */
+  }
+  
+  .check {
+    background-color: #2dc72a;
+  }
+  
+  .danger {
+    background-color: #970000;
+    cursor: pointer;
+  }
+  
+  .color {
+    animation: color 2s linear infinite;
+  }
+  
+  .spin {
+    animation: spin 2s linear infinite;
+  }
+  
+  .rotate {
+    animation: rotate 2s linear infinite;
+  }
+  
+  .shine {
+    animation: shine 2s linear infinite;
+  }
+  
+  /* Display the boxes when active class is added */
+  .check.active, .danger.active {
+      display: flex; /* Show as flex when active */
+      animation: slidedown 0.5s ease-in;
+  }
+  
+  @keyframes slidedown{
+    0%{
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    100%{
+        transform: translateX(0);
+        opacity: 1;
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes color {
+    50% {
+      color: #2B3246;
+    }
+    100% {
+      color: #0ad406;
+    }
+  }
+  
+  @keyframes rotate {
+    0% {
+      transform: rotate(0deg);
+    }
+    20% {
+      transform: rotate(90deg);
+    }
+    40% {
+      transform: rotate(0deg);
+    }
+    80% {
+      transform: rotate(-90deg);
+    }
+  }
+  
+  @keyframes shine {
+    0% {
+      color: #2B3246;
+    }
+    50% {
+      text-shadow:
+        0 0 5px #fff,
+        0 0 10px #fff,
+        0 0 40px red,
+        0 0 60px red,
+        0 0 80px red;
+    }
+  }
+  

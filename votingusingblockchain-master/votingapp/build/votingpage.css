@@ -1,0 +1,460 @@
+@import url('https://fonts.googleapis.com/css?family=Cairo');
+@import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #ee5522;
+  background-image: url("bullseye-gradient.png");
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+#logo{
+  /* margin-top: 1vh; */
+  margin-right:80vw;
+  /* border: 2px solid greenyellow; */
+  width: 20vw;
+}
+
+/* vote for candidate btn */ 
+.btn1 {
+  font-size: 1.7rem;
+  padding: 1rem 2.5rem;
+  outline: none;
+  border-radius: 0.4rem;
+  background: rgb(2,29,78);
+  background: linear-gradient(270deg, rgba(2, 29, 78, 0.681) 0%, rgba(31, 215, 232, 0.873) 60%);
+  color: rgb(4, 4, 38);
+  font-weight: 700;
+  box-shadow: 0px 0px 60px #1f4c65;
+  -webkit-box-reflect: below 10px linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.4));
+}
+
+h1 {
+  background-image: url(https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHByZ2xlY2tpZzgwNzRlNmZzcDc2MjZsYTIxYmxlYmRxOHViNjl6OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/2vmiW6mcYgKst3QVDK/giphy.webp);
+  background-size: 150%; /* Adjust size to focus on brighter areas */
+  background-position: center; /* Position the bright area at the center */
+  color: transparent;
+  -moz-background-clip: text;
+  -webkit-background-clip: text;
+  text-transform: uppercase;
+  font-size: 50px;
+  margin: 10px 0;
+}
+/* styling my button */
+
+.white-mode {
+  text-decoration: none;
+  padding: 7px 10px;
+  background-color: #122;
+  border-radius: 3px;
+  color: #FFF;
+  transition: .35s ease-in-out;
+  position: absolute;
+  left: 15px;
+  bottom: 15px;
+  font-family: "Cairo";
+}
+
+.white-mode:hover {
+  background-color: #FFF;
+  color: #122;
+}
+
+/* Loaders */ 
+.cont {
+  margin-top: 11vh;
+  width: 20vw;
+  position: relative;
+  z-index: 1;
+}
+
+.circle {
+  width: 1.4vw;
+  height: 2.4vh;
+  position: absolute;
+  border-radius: 50%;
+  background-color: #83009d;
+  left: 15%;
+  transform-origin: 50%;
+  animation: circle7124 .5s alternate infinite ease;
+}
+
+@keyframes circle7124 {
+  0% {
+    top: 60px;
+    height: 5px;
+    border-radius: 50px 50px 25px 25px;
+    transform: scaleX(1.7);
+  }
+
+  40% {
+    height: 20px;
+    border-radius: 50%;
+    transform: scaleX(1);
+  }
+
+  100% {
+    top: 0%;
+  }
+}
+
+.circle:nth-child(2) {
+  left: 45%;
+  animation-delay: .2s;
+}
+
+.circle:nth-child(3) {
+  left: auto;
+  right: 15%;
+  animation-delay: .3s;
+}
+
+/* Custom Alert Styling */
+h1 {
+  font-size: 0.9em;
+  text-align: center;
+  font-weight: 100;
+  letter-spacing: 3px;
+  padding-top: 5px;
+  color: #FCFCFC;
+  padding-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.alert {
+  color: #007159;
+  font-size: 1.5em;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.alert2 {
+  color: #f40000;
+  font-size: 1.5em;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+button,
+.dot {
+  cursor: pointer;
+}
+
+#success-box {
+  font-family: "Afacad Flux", sans-serif;
+  display: none;
+  margin-top: 2vh;
+  position: absolute;
+  width: 20vw;
+  height: 50vh;
+  background: linear-gradient(to bottom right, #B0DB7D 40%, #99DBB4 100%);
+  border-radius: 20px;
+  box-shadow: 5px 5px 20px rgba(203, 205, 211, 0.1);
+  border: 3px solid rgb(0, 106, 0);
+  z-index: 1000;
+}
+
+#error-box {
+  font-family: "Afacad Flux", sans-serif;
+  display: none;
+  position: absolute;
+  width: 25%;
+  height: 35vh;
+  background: linear-gradient(to bottom left, #EF8D9C 40%, #FFC39E 100%);
+  border-radius: 20px;
+  box-shadow: 5px 5px 20px rgba(203, 205, 211, 0.1);
+  border: 3px solid rgb(255, 70, 70);
+  z-index: 1000;
+}
+
+#success-box.active, #error-box.active {
+  display: block; /* Show the box when the class 'active' is added */
+  opacity: 1; /* Fully opaque */
+  transform: 1s scale(1.1); /* Scale up */
+  animation: notif 0.9s ease-in-out;
+}
+
+@keyframes notif{
+  0% {
+    opacity: 1;
+    transform: scale(0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: #FCFCFC;
+  border-radius: 50%;
+  position: absolute;
+  top: 4%;
+  right: 6%;
+}
+
+.dot:hover {
+  background: #cccccc;
+}
+
+.two {
+  right: 12%;
+  opacity: 0.5;
+}
+
+.face {
+  position: absolute;
+  width: 5vw;
+  height: 11vh;
+  background: #FCFCFC;
+  border-radius: 50%;
+  border: 1px solid #777777;
+  top: 10vh;
+  left: 37.5%;
+  z-index: 2;
+  animation: bounce 1s ease-in infinite;
+}
+
+.face2 {
+  position: absolute;
+  width: 5vw;
+  height: 11vh;
+  background: #FCFCFC;
+  border-radius: 50%;
+  border: 1px solid #777777;
+  top: 5vh;
+  left: 37.5%;
+  z-index: 2;
+  animation: roll 3s ease-in-out infinite;
+}
+
+.eye {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #777777;
+  border-radius: 50%;
+  top: 40%;
+  left: 20%;
+}
+
+.right {
+  left: 68%;
+}
+
+.mouth {
+  position: absolute;
+  top: 43%;
+  left: 41%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.happy {
+  border: 2px solid;
+  border-color: transparent #777777 #777777 transparent;
+  transform: rotate(45deg);
+}
+
+.sad {
+  top: 49%;
+  border: 2px solid;
+  border-color: #777777 transparent transparent #777777;
+  transform: rotate(45deg);
+}
+
+
+.message {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  height: 40%;
+  top: 47%;
+}
+
+.message2 {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  height: 40%;
+  top: 47%;
+}
+
+.happy-box {
+  position: absolute;
+  padding: 17px 40px;
+  border-radius: 10px;
+  border: 0;
+  background-color: rgb(0, 185, 0);
+  letter-spacing: 1.5px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  box-shadow: rgb(0, 106, 0) 0px 10px 0px 0px;
+  color: hsl(0, 0%, 100%);
+  cursor: pointer;
+  top: 38vh;
+  left: 3.1vw;
+}
+
+.sad-box {
+  position: absolute;
+  padding: 15px;
+  border-radius: 10px;
+  border: 0;
+  background-color: rgb(255, 56, 86);
+  letter-spacing: 1.5px;
+  font-size: 0.9em;
+  transition: all 0.3s ease;
+  box-shadow: rgb(201, 46, 70) 0px 10px 0px 0px;
+  color: hsl(0, 0%, 100%);
+  cursor: pointer;
+  top: 25vh;
+  left: 9vw;
+}
+
+.happy-box:active {
+  background-color: rgb(0, 185, 0);
+  /*50, 168, 80*/
+  box-shadow: rgb(0, 106, 0) 0px 0px 0px 0px;
+  transform: translateY(5px);
+  transition: 200ms;
+}
+
+.sad-box:active {
+  background-color: rgb(255, 56, 86);
+  /*50, 168, 80*/
+  box-shadow: rgb(201, 46, 70) 0px 0px 0px 0px;
+  transform: translateY(5px);
+  transition: 200ms;
+}
+
+@keyframes bounce {
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes scale {
+  50% {
+    transform: scale(0.9);
+  }
+}
+
+@keyframes roll {
+  0% {
+    transform: rotate(0deg);
+    left: 25%;
+  }
+
+  50% {
+    left: 60%;
+    transform: rotate(168deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+    left: 25%;
+  }
+}
+
+@keyframes move {
+  0% {
+    left: 25%;
+  }
+
+  50% {
+    left: 60%;
+  }
+
+  100% {
+    left: 25%;
+  }
+}
+
+.cards-container {
+  margin-top: 8em;
+  /* border: 2px solid black; */
+  font-family: "Cairo";
+  display: flex;
+  justify-content: space-between;
+  width: 91.5%;
+}
+
+.myCard img{
+  /* border: 2px solid black; */
+  margin-right: 10em;
+  margin-bottom: 2em;
+  height: 20vh;
+  width: 15vw;
+}
+
+.btn-class-name {
+  margin-left: 3.5em;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5em;
+  --primary: 255, 90, 120;
+  --secondary: 150, 50, 60;
+  width: 9vw;
+  height: 15vh;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  outline: 10px solid rgb(var(--primary), .5);
+  border-radius: 100%;
+  position: relative;
+  transition: .3s;
+}
+
+.btn-class-name .back {
+  background: rgb(var(--secondary));
+  border-radius: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.btn-class-name .front {
+  background: linear-gradient(0deg, rgba(var(--primary), .6) 20%, rgba(var(--primary)) 50%);
+  box-shadow: 0 .5em 1em -0.2em rgba(var(--secondary), .5);
+  border-radius: 100%;
+  position: absolute;
+  border: 1px solid rgb(var(--secondary));
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-family: inherit;
+  transform: translateY(-15%);
+  transition: .15s;
+  color: rgb(var(--secondary));
+}
+
+.btn-class-name:active .front {
+  transform: translateY(0%);
+  box-shadow: 0 0;
+}
