@@ -10,8 +10,6 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/votingapp/build/favicon_io/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/votingapp/build/favicon_io/favicon-16x16.png">
   <link rel="manifest" href="/votingapp/build/favicon_io/site.webmanifest">
-  
-  
 </head>
 
 <body>
@@ -21,7 +19,6 @@
   <button class="btn1">
     VOTE FOR YOUR FAVOURITE CANDIDATE
   </button>
-
 
   <div class="cont">
     <div class="circle"></div>
@@ -37,7 +34,6 @@
         <span class="front">PARTY A</span>
       </button>
     </div>
-
     <div class="myCard">
       <img src="Lamborghini New 2024 Colored.png" alt="lol">
       <button class="btn-class-name" onclick="vote(2)">
@@ -45,7 +41,6 @@
         <span class="front">PARTY B</span>
       </button>
     </div>
-
     <div class="myCard">
       <img src="ferrari-Photoroom.png" alt="lol">
       <button class="btn-class-name" onclick="vote(3)">
@@ -53,7 +48,6 @@
         <span class="front">PARTY C</span>
       </button>
     </div>
-
     <div class="myCard">
       <img src="Ford Old.png" alt="lol">
       <button class="btn-class-name" onclick="vote(4)">
@@ -63,8 +57,7 @@
     </div>
   </div>
 
-  <!-- Custom Alert Modal -->
-
+  <!-- Success Alert Modal -->
   <div id="success-box">
     <div class="dot"></div>
     <div class="dot two"></div>
@@ -75,10 +68,12 @@
     </div>
     <div class="shadow scale"></div>
     <div class="message">
-      <h1 class="alert">Success! check your email inbox</h1>
+      <h1 class="alert">Success! Check your email inbox.</h1>
     </div>
-    <button class="happy-box" onclick="window.location.href='register.html'">OKAY! LOGOUT</button>
+    <button class="happy-box" onclick="logout()">OKAY! LOGOUT</button>
   </div>
+
+  <!-- Error Alert Modal -->
   <div id="error-box">
     <div class="dot"></div>
     <div class="dot two"></div>
@@ -89,120 +84,100 @@
     </div>
     <div class="shadow move"></div>
     <div class="message2">
-      <h1 class="alert2">Error! Already Voted</h1>
+      <h1 class="alert2">Error! Already Voted.</h1>
     </div>
-    <button class="sad-box" onclick="window.location.href='register.html'">LOGOUT</button>
+    <button class="sad-box" onclick="logout()">LOGOUT</button>
   </div>
 
-</body>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js';
+    import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js';
+    import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js';
 
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js';
-  import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js';
-  import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js';
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAVpg_a2py5qd-YV5bsa061-vHedqXwSqc",
+      authDomain: "newproject-c4df4.firebaseapp.com",
+      databaseURL: "https://newproject-c4df4-default-rtdb.firebaseio.com",
+      projectId: "newproject-c4df4",
+      storageBucket: "newproject-c4df4.appspot.com",
+      messagingSenderId: "67936106416",
+      appId: "1:67936106416:web:e0bcf92539261d5f048875"
+    };
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyANQW_TIeuMUJGoawQ_N6m63gVhSeJWXhE",
-    authDomain: "votinginblockchain.firebaseapp.com",
-    databaseURL: "https://votinginblockchain-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "votinginblockchain",
-    storageBucket: "votinginblockchain.appspot.com",
-    messagingSenderId: "825188836902",
-    appId: "1:825188836902:web:86dbf83a25b9ba554ae8e7"
-  };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
+    // Logout Function
+    function logout() {
+      signOut(auth).then(() => {
+        window.location.href = "login.html";
+      }).catch((error) => {
+        console.error('Error logging out:', error);
+      });
+    }
 
-  // Updated Logout Function
-  function logout() {
-    signOut(auth).then(() => {
-      window.location.href = "login.html";  // Redirect to login page after logout
-    }).catch((error) => {
-      console.error('Error logging out:', error);
-    });
-  }
+    // Show Success Modal
+    function showSuccess() {
+      document.getElementById('success-box').classList.add('active');
+    }
 
-  function register() {
-    signOut(auth).then(() => {
-      window.location.href = "register.html";  // Redirect to login page after logout
-    }).catch((error) => {
-      console.error('Error logging out:', error);
-    });
-  }
+    // Show Error Modal
+    function showError() {
+      document.getElementById('error-box').classList.add('active');
+    }
 
-  // Expose logout function globally
-  window.logout = logout;
+    // Voting Function
+    window.vote = async function (candidateId) {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const userId = user.uid;
 
-  // Show alert boxes based on the result
-  function showSuccess() {
-    const successBox = document.getElementById('success-box');
-    successBox.classList.add('active'); // Add active class
-  }
+          // Check if the user already voted
+          const voteRef = ref(db, 'votes/' + userId);
+          const voteSnap = await get(voteRef);
+          if (voteSnap.exists()) {
+            showError();
+            return;
+          }
 
-  function showError() {
-    const errorBox = document.getElementById('error-box');
-    errorBox.classList.add('active'); // Add active class
-  }
-
-  // Expose vote function to the global scope
-  window.vote = async function (candidateId) {
-    try {
-      const user = auth.currentUser;
-      if (user) {
-        const userId = user.uid;
-        const userEmail = user.email;
-
-        // Check if the user has already voted
-        const voteRef = ref(db, 'votes/' + userId);
-        const voteSnap = await get(voteRef);
-        if (voteSnap.exists()) {
-          showError(); // Notify user that they have already voted
-          return;
-        }
-
-        // Cast vote
-        const response = await fetch('http://localhost:3000/vote', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ candidateId, userEmail })
-        });
-
-        if (response.ok) {
-          // Convert UTC timestamp to IST and store it in Realtime Database
-          const utcTimestamp = new Date().getTime();
-          const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
-          const istTimestamp = new Date(utcTimestamp + istOffset).toISOString();
-
-          await set(voteRef, {
-            timestamp: istTimestamp
+          // Cast vote via API
+          const response = await fetch('http://localhost:3000/vote', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ candidateId, userEmail: user.email })
           });
 
-          showSuccess(); // Show success message
+          if (response.ok) {
+            // Save vote details in Firebase
+            const istTimestamp = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+            await set(voteRef, { timestamp: istTimestamp });
+            showSuccess();
+          } else {
+            console.error('Vote failed:', await response.text());
+            showError();
+          }
         } else {
-          const errorText = await response.text();
-          console.error('Error voting:', errorText);
-          showError(); // Show error message
+          console.warn('User not logged in.');
+          window.location.href = "login.html";
         }
-      } else {
-        showError(); // Notify user to log in
+      } catch (error) {
+        console.error('Error casting vote:', error);
+        showError();
       }
-    } catch (error) {
-      console.error('Error voting:', error);
-      showError(); // Show error message
-    }
-  }
+    };
 
-  // Listen to auth state changes
-  auth.onAuthStateChanged(user => {
-    if (!user) {
-      // Redirect to login page if not logged in
-      window.location.href = "login.html";
-    }
-  });
-</script>
+    // Redirect if not authenticated
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</body>
 
 </html>
