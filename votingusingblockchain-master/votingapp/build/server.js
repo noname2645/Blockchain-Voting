@@ -107,7 +107,7 @@ const transporter = nodemailer.createTransport({
 // Function to send email
 function sendVoteConfirmationEmail(toEmail) {
   const mailOptions = {
-    from: process.env.USER_MAIL, // Sender address
+    from: emailConfig.user, // Sender address
     to: toEmail, // Recipient's email address
     subject: 'THANKYOU FOR YOUR VOTE',
     text:     `This email is a confirmation email regarding your vote.
