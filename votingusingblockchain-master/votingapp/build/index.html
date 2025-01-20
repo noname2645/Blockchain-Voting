@@ -93,18 +93,9 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js';
     import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js';
     import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js';
+    import { firebaseConfig } from './config.js';
 
     // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBpmXMXEjYHPFFSCioOXSR5XXy1IEBWAiE",
-      authDomain: "votinginblockchain3.firebaseapp.com",
-      databaseURL: "https://votinginblockchain3-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "votinginblockchain3",
-      storageBucket: "votinginblockchain3.firebasestorage.app",
-      messagingSenderId: "202093298016",
-      appId: "1:202093298016:web:527682a2d21cb4886a1e05"
-    };
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
