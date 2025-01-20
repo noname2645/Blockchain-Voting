@@ -86,7 +86,7 @@ const contractABI = [
   }
 ];
 
-const contractAddress = '0x890DeeD05d174b070Da656364B0EEC8e3dfEf02b'; // Replace with your contract address
+const contractAddress = '0x1b2e5E38b8CFDdf308A3D8FfeFF4574813617B24'; // Replace with your contract address
 const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
 // Nodemailer Transporter Configuration
@@ -97,7 +97,7 @@ const transporter = nodemailer.createTransport({
   secure:'true',
   auth: {
     user: 'weeb7286@gmail.com', // Replace with your Gmail email
-    pass: 'jvbl ytof wtse psqm'   // Replace with your Gmail app password
+    pass: 'ncxi ykye dyaq hllm'   // Replace with your Gmail app password
   },
   tls: {
     rejectUnauthorized: false, // Allow self-signed certificates
