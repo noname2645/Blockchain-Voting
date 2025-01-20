@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "ethers": "^5.7.2",
     "express": "^4.19.2",
     "nodemailer": "^6.9.15"

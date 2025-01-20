@@ -4,6 +4,8 @@ import cors from 'cors';
 import admin from 'firebase-admin';
 import fs from 'fs';
 import nodemailer from 'nodemailer';
+import { privateKey, contractAddress, emailConfig } from './config.js';
+
 
 // Load service account JSON
 const serviceAccount = JSON.parse(fs.readFileSync('./votinginblockchain.json', 'utf8'));
@@ -17,14 +19,13 @@ app.use(cors());
 // Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://votinginblockchain.firebaseio.com'
+  databaseURL: process.env.DATA_URL
 });
 
 const db = admin.firestore(); // Use Firestore database
 
 const provider = new ethers.providers.JsonRpcProvider('http://localhost:7545'); // Change this to your Ganache URL if different
 
-const privateKey = '0x73159a8d0d5686bfa4a4927a43649e124c954c75f5eaa2ab993388049a4a9baa'; // Replace with your private key from Ganache
 const wallet = new ethers.Wallet(privateKey, provider);
 
 const contractABI = [
@@ -86,7 +87,6 @@ const contractABI = [
   }
 ];
 
-const contractAddress = '0x1b2e5E38b8CFDdf308A3D8FfeFF4574813617B24'; // Replace with your contract address
 const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
 // Nodemailer Transporter Configuration
@@ -96,8 +96,8 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   secure:'true',
   auth: {
-    user: 'weeb7286@gmail.com', // Replace with your Gmail email
-    pass: 'ncxi ykye dyaq hllm'   // Replace with your Gmail app password
+    user: emailConfig.user,
+    pass: emailConfig.pass  
   },
   tls: {
     rejectUnauthorized: false, // Allow self-signed certificates
@@ -105,9 +105,9 @@ const transporter = nodemailer.createTransport({
 });
 
 // Function to send email
-function sendVoteConfirmationEmail(toEmail, candidateId) {
+function sendVoteConfirmationEmail(toEmail) {
   const mailOptions = {
-    from: 'weeb7286@gmail.com', // Sender address
+    from: process.env.USER_MAIL, // Sender address
     to: toEmail, // Recipient's email address
     subject: 'THANKYOU FOR YOUR VOTE',
     text:     `This email is a confirmation email regarding your vote.
