@@ -119,50 +119,104 @@
       document.getElementById('error-box').classList.add('active');
     }
 
-    // Voting Function
-    window.vote = async function (candidateId) {
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          const userId = user.uid;
+    async function checkBlockchainConnection() {
+  try {
+    // If you're using Web3.js directly
+    const response = await fetch('http://localhost:7545', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'net_version',
+        params: [],
+        id: 1
+      })
+    });
     
-          // Check if the user already voted
-          const voteRef = ref(db, 'votes/' + userId);
-          const voteSnap = await get(voteRef);
-          if (voteSnap.exists()) {
-            showError();
-            return;
-          }
-    
-          // Cast vote via API without authentication
-          const response = await fetch('http://localhost:3000/vote', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ candidateId, userEmail: user.email })
-          });
-    
-          if (response.ok) {
-            // Save vote details in Firebase
-            const istTimestamp = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
-            await set(voteRef, { timestamp: istTimestamp });
-            showSuccess();
-          } else {
-            console.error('Vote failed:', await response.text());
-            showError();
-          }
-        } else {
-          console.warn('User not logged in.');
-          window.location.href = "login.html";
-        }
-      } catch (error) {
-        console.error('Error casting vote:', error);
+    const data = await response.json();
+    console.log('Blockchain network connected. Network ID:', data.result);
+    return true;
+  } catch (error) {
+    console.error('Blockchain connection test failed:', error);
+    return false;
+  }
+}
+
+// STEP 2: Modified voting function with blockchain check
+window.vote = async function (candidateId) {
+  try {
+    // First check blockchain connectivity
+    const isBlockchainConnected = await checkBlockchainConnection();
+    if (!isBlockchainConnected) {
+      alert('Cannot connect to blockchain network. Please ensure Ganache is running on port 7545.');
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (user) {
+      const userId = user.uid;
+
+      // Check if the user already voted
+      const voteRef = ref(db, 'votes/' + userId);
+      const voteSnap = await get(voteRef);
+      if (voteSnap.exists()) {
         showError();
+        return;
       }
-    };
-    
-    
+
+      try {
+        // Log details before making the request
+        console.log('Sending vote to server:', {
+          candidateId, 
+          userEmail: user.email
+        });
+
+        // Assuming you have a backend that takes the candidateId and userEmail, and processes the vote
+        const response = await fetch('http://localhost:3000/vote', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ candidateId, userEmail: user.email })
+        });
+
+        // Store response text
+        let responseText;
+        try {
+          responseText = await response.text();
+        } catch (err) {
+          responseText = 'Could not read response text';
+        }
+
+        console.log('Server response status:', response.status);
+        console.log('Server response text:', responseText);
+
+        if (response.ok) {
+          // Store the vote details in Firebase
+          const istTimestamp = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+          await set(voteRef, { candidateId, timestamp: istTimestamp });
+          
+          // Show success modal
+          showSuccess();
+        } else {
+          alert('Server error: ' + responseText);
+        }
+      } catch (fetchError) {
+        console.error('Network error details:', fetchError);
+        alert('Network error: ' + fetchError.message);
+      }
+    } else {
+      console.warn('User not logged in.');
+      window.location.href = "login.html";
+    }
+  } catch (error) {
+    console.error('Error casting vote:', error);
+    showError();
+  }
+};
+
   </script>
 </body>
 

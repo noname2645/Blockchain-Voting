@@ -1,5 +1,6 @@
-const provider = new ethers.providers.JsonRpcProvider('http://localhost:7545'); // Replace with your provider URL
-const contractAddress = '0x1b2e5E38b8CFDdf308A3D8FfeFF4574813617B24'; // Replace with your contract address
+import { contractAddress } from "./config.js"; // Ensure this is correct
+
+const provider = new ethers.providers.JsonRpcProvider('http://localhost:7545');
 const contractABI = [
     {
         "anonymous": false,
@@ -13,36 +14,6 @@ const contractABI = [
         ],
         "name": "VotedEvent",
         "type": "event"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "name": "candidates",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "id",
-                "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "name",
-                "type": "string"
-            },
-            {
-                "internalType": "uint256",
-                "name": "voteCount",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function",
-        "constant": true
     },
     {
         "inputs": [
@@ -104,16 +75,26 @@ const contractABI = [
 const contract = new ethers.Contract(contractAddress, contractABI, provider);
 
 async function fetchVotes() {
-    const resultsBody = document.getElementById('resultsBody'); // Corrected ID
+    const resultsBody = document.getElementById('resultsBody');
     const totalVotesElement = document.getElementById('totalVotes');
 
     try {
         const totalCandidates = await contract.getCandidatesCount();
+        console.log(`Total candidates: ${totalCandidates.toString()}`);
+
+        if (totalCandidates.toNumber() === 0) {
+            console.log("No candidates found.");
+        }
 
         for (let i = 1; i <= totalCandidates; i++) {
             try {
-                const [candidateId, candidateName, voteCount] = await contract.getCandidate(i);
+                const candidate = await contract.getCandidate(i);
+                console.log(`Fetched candidate ${i}:`, candidate);
 
+                const candidateId = candidate.id;
+                const candidateName = candidate.name;
+                const voteCount = candidate.voteCount;
+                
                 const row = document.createElement('tr');
                 const nameCell = document.createElement('td');
                 nameCell.textContent = candidateName;
@@ -131,13 +112,14 @@ async function fetchVotes() {
 
         // Fetch total votes
         const totalVotes = await contract.getTotalVotes();
+        console.log(`Total votes: ${totalVotes.toString()}`);
         totalVotesElement.textContent = totalVotes.toString();
+
     } catch (error) {
         console.error("Error fetching candidates count:", error);
     }
 }
 
-// Fetch votes when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     fetchVotes();
 });

@@ -1,15 +1,15 @@
 module.exports = {
-  networks: {
+    networks: {
       development: {
-          host: "localhost",
-          port: 7545,        // Port where Ganache is running
-          network_id: "*",  // Match any network id
+        host: "127.0.0.1",     // Localhost
+        port: 7545,            // Ganache default
+        network_id: "*"        // Accept any network ID returned by Ganache
       }
-  },
-  // Specify the Solidity version to use
-  compilers: {
+    },
+    compilers: {
       solc: {
-          version: "0.8.0" // Match the version used in your contract
+        version: "0.8.0",      // Same as your contract version
       }
-  }
-};
+    }
+  };
+  
