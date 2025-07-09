@@ -1,6 +1,6 @@
-import { contractAddress } from "./config.js"; // Ensure this is correct
+import {CONTRACT_ADDRESS, BLAST_API_KEY} from './config.js';
 
-const provider = new ethers.providers.JsonRpcProvider('http://localhost:7545');
+const provider = new ethers.providers.JsonRpcProvider(BLAST_API_KEY);
 const contractABI = [
     {
         "anonymous": false,
@@ -72,7 +72,7 @@ const contractABI = [
     }
 ];
 
-const contract = new ethers.Contract(contractAddress, contractABI, provider);
+const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, provider);
 
 async function fetchVotes() {
     const resultsBody = document.getElementById('resultsBody');
@@ -91,7 +91,6 @@ async function fetchVotes() {
                 const candidate = await contract.getCandidate(i);
                 console.log(`Fetched candidate ${i}:`, candidate);
 
-                const candidateId = candidate.id;
                 const candidateName = candidate.name;
                 const voteCount = candidate.voteCount;
                 

@@ -2,23 +2,17 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Voting System</title>
-  <link rel="stylesheet" href="votingpage.css">
-  <link rel="apple-touch-icon" sizes="180x180" href="/votingapp/build/favicon_io/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/votingapp/build/favicon_io/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/votingapp/build/favicon_io/favicon-16x16.png">
-  <link rel="manifest" href="/votingapp/build/favicon_io/site.webmanifest">
+  <link rel="stylesheet" href="votingpage.css" />
 </head>
 
 <body>
   <nav>
-    <img id="logo" src="newbv-Photoroom.png" alt="Failed">
+    <img id="logo" src="newbv-Photoroom.png" alt="Failed" />
   </nav>
-  <button class="btn1">
-    VOTE FOR YOUR FAVOURITE CANDIDATE
-  </button>
+  <button class="btn1">VOTE FOR YOUR FAVOURITE CANDIDATE</button>
 
   <div class="cont">
     <div class="circle"></div>
@@ -28,28 +22,28 @@
 
   <div class="cards-container">
     <div class="myCard">
-      <img src="bugatti-Photoroom.png" alt="lol">
+      <img src="bugatti-Photoroom.png" alt="Party A" />
       <button class="btn-class-name" onclick="vote(1)">
         <span class="back"></span>
         <span class="front">PARTY A</span>
       </button>
     </div>
     <div class="myCard">
-      <img src="Lamborghini New 2024 Colored.png" alt="lol">
+      <img src="Lamborghini New 2024 Colored.png" alt="Party B" />
       <button class="btn-class-name" onclick="vote(2)">
         <span class="back"></span>
         <span class="front">PARTY B</span>
       </button>
     </div>
     <div class="myCard">
-      <img src="ferrari-Photoroom.png" alt="lol">
+      <img src="ferrari-Photoroom.png" alt="Party C" />
       <button class="btn-class-name" onclick="vote(3)">
         <span class="back"></span>
         <span class="front">PARTY C</span>
       </button>
     </div>
     <div class="myCard">
-      <img src="Ford Old.png" alt="lol">
+      <img src="Ford Old.png" alt="Party D" />
       <button class="btn-class-name" onclick="vote(4)">
         <span class="back"></span>
         <span class="front">PARTY D</span>
@@ -57,7 +51,7 @@
     </div>
   </div>
 
-  <!-- Success Alert Modal -->
+  <!-- Success Modal -->
   <div id="success-box">
     <div class="dot"></div>
     <div class="dot two"></div>
@@ -73,7 +67,7 @@
     <button class="happy-box" onclick="logout()">OKAY! LOGOUT</button>
   </div>
 
-  <!-- Error Alert Modal -->
+  <!-- Error Modal -->
   <div id="error-box">
     <div class="dot"></div>
     <div class="dot two"></div>
@@ -95,12 +89,10 @@
     import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js';
     import { firebaseConfig } from './config.js';
 
-    // Firebase Configuration
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // Logout Function
     function logout() {
       signOut(auth).then(() => {
         window.location.href = "login.html";
@@ -109,114 +101,57 @@
       });
     }
 
-    // Show Success Modal
     function showSuccess() {
       document.getElementById('success-box').classList.add('active');
     }
 
-    // Show Error Modal
     function showError() {
       document.getElementById('error-box').classList.add('active');
     }
 
-    async function checkBlockchainConnection() {
-  try {
-    // If you're using Web3.js directly
-    const response = await fetch('http://localhost:7545', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        method: 'net_version',
-        params: [],
-        id: 1
-      })
-    });
-    
-    const data = await response.json();
-    console.log('Blockchain network connected. Network ID:', data.result);
-    return true;
-  } catch (error) {
-    console.error('Blockchain connection test failed:', error);
-    return false;
-  }
-}
-
-// STEP 2: Modified voting function with blockchain check
-window.vote = async function (candidateId) {
-  try {
-    // First check blockchain connectivity
-    const isBlockchainConnected = await checkBlockchainConnection();
-    if (!isBlockchainConnected) {
-      alert('Cannot connect to blockchain network. Please ensure Ganache is running on port 7545.');
-      return;
-    }
-
-    const user = auth.currentUser;
-    if (user) {
-      const userId = user.uid;
-
-      // Check if the user already voted
-      const voteRef = ref(db, 'votes/' + userId);
-      const voteSnap = await get(voteRef);
-      if (voteSnap.exists()) {
-        showError();
-        return;
-      }
-
+    // Secure voting
+    window.vote = async function (candidateId) {
       try {
-        // Log details before making the request
-        console.log('Sending vote to server:', {
-          candidateId, 
-          userEmail: user.email
-        });
+        const user = auth.currentUser;
+        if (!user) {
+          console.warn("Not logged in");
+          window.location.href = "login.html";
+          return;
+        }
 
-        // Assuming you have a backend that takes the candidateId and userEmail, and processes the vote
+        const userId = user.uid;
+        const voteRef = ref(db, 'votes/' + userId);
+        const voteSnap = await get(voteRef);
+
+        if (voteSnap.exists()) {
+          showError();
+          return;
+        }
+
+        console.log('Sending vote to backend...', { candidateId, email: user.email });
+
         const response = await fetch('http://localhost:3000/vote', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ candidateId, userEmail: user.email })
         });
 
-        // Store response text
-        let responseText;
-        try {
-          responseText = await response.text();
-        } catch (err) {
-          responseText = 'Could not read response text';
-        }
-
-        console.log('Server response status:', response.status);
-        console.log('Server response text:', responseText);
+        const text = await response.text();
+        console.log('Server response:', text);
 
         if (response.ok) {
-          // Store the vote details in Firebase
           const istTimestamp = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
           await set(voteRef, { candidateId, timestamp: istTimestamp });
-          
-          // Show success modal
           showSuccess();
         } else {
-          alert('Server error: ' + responseText);
+          alert('Voting failed: ' + text);
         }
-      } catch (fetchError) {
-        console.error('Network error details:', fetchError);
-        alert('Network error: ' + fetchError.message);
-      }
-    } else {
-      console.warn('User not logged in.');
-      window.location.href = "login.html";
-    }
-  } catch (error) {
-    console.error('Error casting vote:', error);
-    showError();
-  }
-};
 
+      } catch (error) {
+        console.error('Voting error:', error);
+        showError();
+      }
+    }
   </script>
 </body>
 

@@ -1,267 +1,177 @@
+import dotenv from 'dotenv';
 import express from 'express';
-import { ethers } from 'ethers';
 import cors from 'cors';
+import { ethers } from 'ethers';
 import admin from 'firebase-admin';
 import fs from 'fs';
 import nodemailer from 'nodemailer';
-import { privateKey, contractAddress, emailConfig } from './config.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Load service account JSON
+dotenv.config(); // ✅ Load env vars
+
+// Debug logs to ensure .env is working
+console.log("✅ PRIVATE_KEY loaded:", process.env.PRIVATE_KEY?.slice(0, 5), "...");
+console.log("✅ CONTRACT_ADDRESS:", process.env.CONTRACT_ADDRESS);
+console.log("✅ BLAST_API_KEY:", process.env.BLAST_API_KEY?.slice(0, 40), "...");
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const serviceAccount = JSON.parse(fs.readFileSync('./votinginblockchain.json', 'utf8'));
 
 const app = express();
-const port = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'dist')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist/index.html'));
+});
 
-// Initialize Firebase Admin SDK
+// Firebase setup
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: process.env.DATA_URL
 });
+const db = admin.firestore();
 
-const db = admin.firestore(); // Use Firestore database
-
-// FIXED: Provider initialization with proper error handling
-let provider;
-try {
-  // Use HTTP protocol (not WS) and specify the full URL with port
-  provider = new ethers.providers.JsonRpcProvider({
-    url: 'http://127.0.0.1:7545',
-    name: 'ganache',
-    chainId: 1337
-  });
-  
-  console.log('Provider initialized');
-} catch (error) {
-  console.error('Failed to initialize provider:', error);
-  process.exit(1); // Exit if we can't connect to blockchain
-}
-
-// FIXED: Initialize wallet with better error handling
-let wallet;
-try {
-  wallet = new ethers.Wallet(privateKey, provider);
-  console.log('Wallet initialized with address:', wallet.address);
-} catch (error) {
-  console.error('Failed to initialize wallet:', error);
-  process.exit(1);
-}
-
+// Contract ABI (shortened for demo)
 const contractABI = [
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "candidateId",
-        "type": "uint256"
-      }
-    ],
-    "name": "VotedEvent",
-    "type": "event"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "candidates",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "voteCount",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function",
-    "constant": true
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_candidateId",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [{ "internalType": "uint256", "name": "_candidateId", "type": "uint256" }],
     "name": "vote",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "candidates",
+    "outputs": [
+      { "internalType": "uint256", "name": "id", "type": "uint256" },
+      { "internalType": "string", "name": "name", "type": "string" },
+      { "internalType": "uint256", "name": "voteCount", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ];
 
-// FIXED: Contract initialization with error handling
-let contract;
-try {
-  contract = new ethers.Contract(contractAddress, contractABI, wallet);
-  console.log('Contract initialized at address:', contractAddress);
-} catch (error) {
-  console.error('Failed to initialize contract:', error);
-  process.exit(1);
-}
+// Ethereum setup
+const provider = new ethers.providers.JsonRpcProvider(process.env.BLAST_API_KEY);
+const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+const contract = new ethers.Contract(process.env.CONTRACT_ADDRESS, contractABI, signer);
 
-// Nodemailer Transporter Configuration
+// Email setup
 const transporter = nodemailer.createTransport({
-  host: '127.0.0.1',
-  port: '465',
   service: 'gmail',
-  secure: true,
   auth: {
-    user: emailConfig.user,
-    pass: emailConfig.pass  
-  },
-  tls: {
-    rejectUnauthorized: false, // Allow self-signed certificates
-  },
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
 });
 
-// Function to send email
-function sendVoteConfirmationEmail(toEmail) {
+// Vote confirmation email
+function sendVoteConfirmationEmail(toEmail, transactionHash) {
   const mailOptions = {
-    from: emailConfig.user, // Sender address
-    to: toEmail, // Recipient's email address
-    subject: 'THANKYOU FOR YOUR VOTE',
-    text: `This email is a confirmation email regarding your vote.
-           If you have received this email that means your vote has been successfully recorded on our system.
-      
-           Best regards,
-           Team ECI`
+    from: process.env.EMAIL_USER,
+    to: toEmail,
+    subject: 'THANK YOU FOR YOUR VOTE 🗳️',
+    html: `
+      <h3>Vote Confirmation</h3>
+      <p>Your vote has been recorded on the blockchain ✅</p>
+      <p><b>Tx Hash:</b> ${transactionHash}</p>
+      <a href="https://sepolia.etherscan.io/tx/${transactionHash}" target="_blank">View on Etherscan</a>
+      <br><br><p>- Team ECI</p>
+    `
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log('Error sending email: ', error);
-    } else {
-      console.log('Email sent: ' + info.response);
-    }
+    if (error) console.log('❌ Email error:', error);
+    else console.log('📬 Email sent:', info.response);
   });
 }
 
-// NEW: Add health check endpoint
+// API Routes
+
+app.get('/', (req, res) => {
+  res.send('✅ Voting Backend is running');
+});
+
 app.get('/health', async (req, res) => {
   try {
-    // Test blockchain connection
     const network = await provider.getNetwork();
     const blockNumber = await provider.getBlockNumber();
-    
-    return res.status(200).json({
+    const balance = await provider.getBalance(signer.address);
+    res.json({
       status: 'ok',
-      blockchain: {
-        networkId: network.chainId,
-        name: network.name,
-        blockNumber: blockNumber,
-        walletAddress: wallet.address
-      }
+      chainId: network.chainId,
+      network: network.name,
+      address: signer.address,
+      balance: ethers.utils.formatEther(balance)
     });
-  } catch (error) {
-    console.error('Health check error:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: error.message
-    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// FIXED: Vote endpoint with better error handling
 app.post('/vote', async (req, res) => {
   const { candidateId, userEmail } = req.body;
-  console.log(`Received vote request for candidateId: ${candidateId}, userEmail: ${userEmail}`);
+  if (!candidateId || !userEmail) return res.status(400).json({ error: "Missing fields" });
 
   try {
-    // First check if we're connected to the network
-    try {
-      const network = await provider.getNetwork();
-      console.log(`Connected to network: ${network.name} (${network.chainId})`);
-    } catch (networkError) {
-      console.error('Network connection error:', networkError);
-      return res.status(500).send('Error: could not detect network. Please ensure Ganache is running.');
-    }
-    
-    // Check contract connection
-    try {
-      const gasEstimate = await contract.estimateGas.vote(candidateId);
-      console.log(`Gas estimate for voting: ${gasEstimate.toString()}`);
-    } catch (contractError) {
-      console.error('Contract interaction error:', contractError);
-      return res.status(500).send(`Contract error: ${contractError.message}`);
-    }
-    
-    console.log(`Submitting vote transaction for candidateId: ${candidateId}`);
-    const tx = await contract.vote(candidateId);
-    console.log(`Transaction submitted: ${tx.hash}`);
-    
-    const receipt = await tx.wait(); // Wait for the transaction to be mined
-    console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
+    const balance = await provider.getBalance(signer.address);
+    if (balance.eq(0)) return res.status(400).json({ error: 'Insufficient ETH' });
 
-    // Get the UTC timestamp
-    const utcTimestamp = admin.firestore.Timestamp.now();
+    const gasEstimate = await contract.estimateGas.vote(candidateId);
+    const tx = await contract.vote(candidateId, { gasLimit: gasEstimate.mul(120).div(100) });
+    const receipt = await tx.wait();
 
-    // Convert the UTC timestamp to IST
-    const istTimestamp = new Date(utcTimestamp.toDate().getTime() + (5.5 * 60 * 60 * 1000));
+    const istTime = new Date(Date.now() + (5.5 * 60 * 60 * 1000));
+    const voteDoc = {
+      userEmail,
+      transactionHash: tx.hash,
+      timestamp: istTime,
+      blockNumber: receipt.blockNumber,
+      gasUsed: receipt.gasUsed.toString()
+    };
 
-    // Update Firebase with the new vote and IST timestamp
-    const candidateRef = db.collection('votes').doc(candidateId.toString());
-    await candidateRef.set({
-      timestamp: istTimestamp
-    });
-    console.log(`Vote recorded in Firestore for candidateId: ${candidateId}`);
+    await db.collection('votes').doc(tx.hash).set(voteDoc);
+    sendVoteConfirmationEmail(userEmail, tx.hash);
 
-    // Send confirmation email
-    sendVoteConfirmationEmail(userEmail);
-    console.log(`Confirmation email sent to: ${userEmail}`);
+    res.json({ success: true, ...voteDoc });
 
-    res.send('Vote cast successfully, email sent.');
-  } catch (error) {
-    console.error('Vote error:', error);
-    res.status(500).send(error.toString());
+  } catch (err) {
+    console.error('Vote Error:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
-app.setMaxListeners(20);
+app.get('/votes', async (req, res) => {
+  const snapshot = await db.collection('votes').get();
+  const votes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  res.json({ success: true, votes, count: votes.length });
+});
 
-// Test blockchain connection on startup
-(async () => {
-  try {
-    const network = await provider.getNetwork();
-    console.log(`✅ Connected to blockchain network: ${network.name} (chainId: ${network.chainId})`);
-    
-    const blockNumber = await provider.getBlockNumber();
-    console.log(`✅ Current block number: ${blockNumber}`);
-    
-    console.log(`✅ Wallet address: ${wallet.address}`);
-    
-    // Try to interact with the contract
-    try {
-      const gasEstimate = await contract.estimateGas.vote(1);
-      console.log(`✅ Contract connection successful (gas estimate: ${gasEstimate.toString()})`);
-    } catch (contractError) {
-      console.error('❌ Contract interaction failed:', contractError.message);
-      console.log('Check if the contract address is correct and the contract is deployed');
-    }
-  } catch (error) {
-    console.error('❌ Failed to connect to blockchain:', error.message);
-    console.error('Make sure Ganache is running at http://127.0.0.1:7545');
-  }
-})();
+app.get('/results', async (req, res) => {
+  const snapshot = await db.collection('votes').get();
+  const result = {};
+  snapshot.forEach(doc => {
+    const id = doc.data().candidateId;
+    result[id] = (result[id] || 0) + 1;
+  });
+  res.json({ success: true, result });
+});
 
-app.listen(port, () => {
-  console.log(`Backend server is running on http://localhost:${port}`);
+app.get('/vote/:txHash', async (req, res) => {
+  const doc = await db.collection('votes').doc(req.params.txHash).get();
+  if (!doc.exists) return res.status(404).json({ error: "Vote not found" });
+  res.json({ success: true, vote: doc.data() });
+});
+
+// Start Server
+app.listen(PORT, () => {
+  console.log(`🚀 Server listening at http://localhost:${PORT}`);
 });
