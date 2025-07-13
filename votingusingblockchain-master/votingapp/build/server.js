@@ -11,9 +11,9 @@ import { fileURLToPath } from 'url';
 dotenv.config(); // ✅ Load env vars
 
 // Debug logs to ensure .env is working
-console.log("✅ PRIVATE_KEY loaded:", process.env.PRIVATE_KEY?.slice(0, 5), "...");
-console.log("✅ CONTRACT_ADDRESS:", process.env.CONTRACT_ADDRESS);
-console.log("✅ BLAST_API_KEY:", process.env.BLAST_API_KEY?.slice(0, 40), "...");
+// console.log("✅ PRIVATE_KEY loaded:", process.env.PRIVATE_KEY?.slice(0, 5), "...");
+// console.log("✅ CONTRACT_ADDRESS:", process.env.CONTRACT_ADDRESS);
+// console.log("✅ BLAST_API_KEY:", process.env.BLAST_API_KEY?.slice(0, 40), "...");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,35 +64,6 @@ const provider = new ethers.providers.JsonRpcProvider(process.env.BLAST_API_KEY)
 const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 const contract = new ethers.Contract(process.env.CONTRACT_ADDRESS, contractABI, signer);
 
-// Email setup
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
-
-// Vote confirmation email
-function sendVoteConfirmationEmail(toEmail, transactionHash) {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: toEmail,
-    subject: 'THANK YOU FOR YOUR VOTE 🗳️',
-    html: `
-      <h3>Vote Confirmation</h3>
-      <p>Your vote has been recorded on the blockchain ✅</p>
-      <p><b>Tx Hash:</b> ${transactionHash}</p>
-      <a href="https://sepolia.etherscan.io/tx/${transactionHash}" target="_blank">View on Etherscan</a>
-      <br><br><p>- Team ECI</p>
-    `
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) console.log('❌ Email error:', error);
-    else console.log('📬 Email sent:', info.response);
-  });
-}
 
 // API Routes
 
@@ -139,7 +110,6 @@ app.post('/vote', async (req, res) => {
     };
 
     await db.collection('votes').doc(tx.hash).set(voteDoc);
-    sendVoteConfirmationEmail(userEmail, tx.hash);
 
     res.json({ success: true, ...voteDoc });
 

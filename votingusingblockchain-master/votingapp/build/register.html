@@ -4,9 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Yourself</title>
+    <title>Register</title>
     <link rel="stylesheet" href="register.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/votingusingblockchain-master/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/votingusingblockchain-master/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/votingusingblockchain-master/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
 </head>
+
 <body>
     <section>
         <img id="logo" src="newbv-Photoroom.png" alt="Failed">
@@ -64,14 +69,14 @@
             window.location.href = "login.html";
         }
     </script>
-    
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js';
         import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js';
         import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js';
         import { firebaseConfig } from './config.js';
 
-     
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
@@ -114,9 +119,6 @@
 
                     const userRef = ref(db, 'users/' + user.uid);
                     set(userRef, {
-                        username: username,
-                        email: email,
-                        password: password
                     }).then(() => {
                         showNotification(successBox, "Registration successful! Redirecting...", 3000, true); // Show success and redirect
                     }).catch((error) => {
@@ -130,8 +132,6 @@
                 });
         });
     </script>
-
-
 </body>
 
 </html>
