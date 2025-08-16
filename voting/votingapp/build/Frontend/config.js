@@ -43,7 +43,7 @@ export const BLAST_API_KEY = "https://eth-sepolia.blastapi.io/2ce6555f-b97d-49d3
 
 // ✅ BACKEND URL (no sensitive info)
 export const BACKEND_URL = ENV === 'production' 
-  ? 'https://your-backend.onrender.com' 
+  ? 'https://blockchain-voting-6no5.onrender.com' 
   : 'http://localhost:3000';
 
 // ❌ SENSITIVE DATA REMOVED:
