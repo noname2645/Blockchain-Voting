@@ -62,15 +62,21 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ✅ Secure CORS setup
+// ✅ Correct (allow your frontend)
 app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://127.0.0.1:5500',
     'http://localhost:5500',
-    'https://blockchain-voting-6no5.onrender.com' // Update with your actual frontend URL
+    'https://blockchainvote-i6r2.onrender.com' // frontend domain
   ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
+
+// Handle preflight requests
+app.options('*', cors());
+
 app.use(express.json());
 
 // ✅ Firebase credential setup - PROPERLY DECLARED
