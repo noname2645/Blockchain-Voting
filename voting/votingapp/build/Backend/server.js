@@ -74,21 +74,26 @@ app.use(cors({
 app.use(express.json());
 
 // ✅ Firebase Admin setup with environment variables
-let firebaseCredential;
 try {
-  if (fs.existsSync('./votinginblockchain.json')) {
-    const serviceAccountFile = JSON.parse(fs.readFileSync('./votinginblockchain.json', 'utf8'));
-    firebaseCredential = admin.credential.cert(serviceAccountFile);
-    console.log('✅ Firebase service account loaded from file');
-  } else {
-    console.error('❌ Firebase service account file not found');
-    process.exit(1);
-  }
+  firebaseCredential = admin.credential.cert({
+    type: process.env.FIREBASE_TYPE,
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'), // important fix
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    client_id: process.env.FIREBASE_CLIENT_ID,
+    auth_uri: process.env.FIREBASE_AUTH_URI,
+    token_uri: process.env.FIREBASE_TOKEN_URI,
+    auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+    client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
+    universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN,
+  });
+
+  console.log("✅ Firebase service account loaded from ENV");
 } catch (error) {
-  console.error('❌ Firebase credential setup failed:', error.message);
+  console.error("❌ Firebase credential setup failed:", error.message);
   process.exit(1);
 }
-
 // ✅ Initialize Firebase Admin
 try {
   admin.initializeApp({
