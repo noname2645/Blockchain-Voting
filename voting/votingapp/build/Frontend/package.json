@@ -2,13 +2,8 @@
   "name": "voting-frontend",
   "version": "1.0.0",
   "description": "Blockchain voting system frontend",
-  "main": "index.html",
-  "type": "commonjs",
   "scripts": {
-    "build": "echo 'Static frontend - no build required'",
-    "start": "echo 'Static frontend ready'",
-    "dev": "echo 'Use live server or similar for development'",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "echo 'Static frontend - no build step required'"
   },
   "keywords": ["voting", "blockchain", "frontend"],
   "author": "",
