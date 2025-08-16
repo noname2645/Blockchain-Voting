@@ -74,11 +74,20 @@ app.use(cors({
 app.use(express.json());
 
 try {
+  // First, let's get the private key and handle it properly
+  let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  
+  // Remove quotes if they exist and handle newlines properly
+  if (privateKey) {
+    privateKey = privateKey.replace(/^"(.*)"$/, '$1'); // Remove surrounding quotes
+    privateKey = privateKey.replace(/\\n/g, '\n'); // Convert \\n to actual newlines
+  }
+  
   firebaseCredential = admin.credential.cert({
     type: process.env.FIREBASE_TYPE,
     project_id: process.env.FIREBASE_PROJECT_ID,
     private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-    private_key: (process.env.FIREBASE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
+    private_key: privateKey,
     client_email: process.env.FIREBASE_CLIENT_EMAIL,
     client_id: process.env.FIREBASE_CLIENT_ID,
     auth_uri: process.env.FIREBASE_AUTH_URI,
@@ -91,6 +100,11 @@ try {
   console.log("✅ Firebase service account loaded from ENV");
 } catch (error) {
   console.error("❌ Firebase credential setup failed:", error.message);
+  console.error("🔍 Debug info:");
+  console.error("- Private key exists:", !!process.env.FIREBASE_PRIVATE_KEY);
+  console.error("- Private key starts with BEGIN:", process.env.FIREBASE_PRIVATE_KEY?.includes('BEGIN PRIVATE KEY'));
+  console.error("- Project ID:", process.env.FIREBASE_PROJECT_ID);
+  console.error("- Client email:", process.env.FIREBASE_CLIENT_EMAIL);
   process.exit(1);
 }
 
