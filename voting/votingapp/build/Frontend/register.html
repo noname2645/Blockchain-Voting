@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="register.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/votingusingblockchain-master/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/votingusingblockchain-master/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/votingusingblockchain-master/favicon-16x16.png">
+</head>
+
+<body>
+    <section>
+        <img id="logo" src="newbv-Photoroom.png" alt="Failed">
+        <div id="form-ui">
+            <!-- ✅ REMOVED action and method attributes -->
+            <form id="form">
+                <div id="form-body">
+                    <div id="welcome-lines">
+                        Register
+                    </div>
+
+                    <div id="input-area">
+                        <div class="form-inp">
+                            <input id="username" placeholder="username" type="text" required>
+                        </div>
+                        <div class="form-inp">
+                            <input id="email" placeholder="Email" type="email" required>
+                        </div>
+                        <div class="form-inp">
+                            <input id="password" placeholder="Password" type="password" required minlength="6">
+                        </div>
+                    </div>
+                    <div id="submit-button-cvr">
+                        <button id="submit-button" type="submit">Register</button>
+                    </div>
+                    <div id="forgot-pass">
+                        <a href="login.html">Already have an account?</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class='air air1'></div>
+        <div class='air air2'></div>
+        <div class='air air3'></div>
+        <div class='air air4'></div>
+    </section>
+
+    <div class="center">
+        <div class="check" style="display: none;">
+            <i class="far fa-check-circle color"></i> &nbsp; &nbsp;
+            <span id="good">Success!</span>
+        </div>
+        <div class="danger" style="display: none;">
+            <i class="far fa-times-circle shine"></i>
+            &nbsp; &nbsp;
+            <span id="wrong">Error!</span>
+        </div>
+    </div>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap');
+        
+        /* Add some basic styles for the notifications */
+        .center {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .check, .danger {
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .check {
+            background-color: #28a745;
+        }
+        
+        .danger {
+            background-color: #dc3545;
+        }
+        
+        .check.active, .danger.active {
+            opacity: 1;
+        }
+        
+        #submit-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js';
+        import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js';
+        import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js';
+        import { firebaseConfig } from './config.js';
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        function showNotification(notification, message, duration = 3000, redirect = false) {
+            const span = notification.querySelector("span");
+            if (span) {
+                span.textContent = message;
+            }
+            
+            notification.style.display = 'block';
+            notification.classList.add('active');
+
+            setTimeout(() => {
+                notification.classList.remove('active');
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                    if (redirect) {
+                        window.location.href = "login.html";
+                    }
+                }, 500);
+            }, duration);
+        }
+
+        // ✅ MAIN REGISTRATION HANDLER
+        document.getElementById("form").addEventListener("submit", async function (event) {
+            // ✅ PREVENT DEFAULT FORM SUBMISSION
+            event.preventDefault();
+            event.stopPropagation();
+
+            console.log("🔄 Registration form submitted");
+
+            const username = document.getElementById("username").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const successBox = document.getElementsByClassName('check')[0];
+            const errorBox = document.getElementsByClassName('danger')[0];
+            const submitButton = document.getElementById("submit-button");
+
+            // Input validation
+            if (!username || !email || !password) {
+                showNotification(errorBox, "Please fill in all fields");
+                return;
+            }
+
+            if (password.length < 6) {
+                showNotification(errorBox, "Password must be at least 6 characters");
+                return;
+            }
+
+            // Disable submit button
+            submitButton.disabled = true;
+            submitButton.textContent = "Registering...";
+
+            try {
+                console.log("🔄 Creating Firebase user...");
+                
+                // Create user with Firebase Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                console.log("✅ Firebase user created:", user.uid);
+
+                // Store additional user data in Realtime Database
+                const userRef = ref(db, 'users/' + user.uid);
+                await set(userRef, {
+                    username: username,
+                    email: email,
+                    hasVoted: false,
+                    registrationDate: new Date().toISOString()
+                });
+
+                console.log("✅ User data saved to database");
+                showNotification(successBox, "Registration successful! Redirecting to login...", 3000, true);
+
+            } catch (error) {
+                console.error("❌ Registration error:", error);
+                
+                let errorMessage = "Registration failed: ";
+                
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = "This email is already registered";
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = "Please enter a valid email address";
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = "Password is too weak. Use at least 6 characters";
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage = "Network error. Please check your internet connection";
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+                
+                showNotification(errorBox, errorMessage, 4000);
+            } finally {
+                // Re-enable submit button
+                submitButton.disabled = false;
+                submitButton.textContent = "Register";
+            }
+        });
+
+        // ✅ ALSO PREVENT ANY OTHER FORM SUBMISSION ATTEMPTS
+        document.getElementById("form").setAttribute("onsubmit", "return false;");
+        
+        console.log("✅ Registration page loaded successfully");
+    </script>
+</body>
+
+</html>

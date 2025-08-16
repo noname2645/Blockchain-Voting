@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css?family=Cairo');
+
+body {
+    font-family: "Cairo";
+    /* background-image: url('Amoled-Background-HD-Wallpaper-025.jpg'); */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: #fff; /* White text color for body */
+    letter-spacing: 2px;
+    font-size: 1.5em;
+}
+
+#logo{
+    /* margin-top: 0; */
+    margin-right:40vw;
+    width: 20vw;
+  }
+
+h1 {
+    text-align: center;
+    margin-top: 20px;
+    color: #fff; /* White text */
+}
+
+table {
+    width: 60%;
+    margin-top: 3vh;
+    margin-left: 19vw;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Shadow for contrast */
+    background-color: rgba(0, 0, 0, 0.2); /* More transparent background */
+    backdrop-filter: blur(10px); /* Blur effect for the table background */
+    -webkit-backdrop-filter: blur(20px); /* For Safari */
+}
+
+th, td {
+    padding: 15px 20px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Light border with more transparency */
+    color: #fff; /* White text */
+}
+
+th {
+    background: linear-gradient(45deg, rgba(106, 27, 154, 0.7), rgba(25, 118, 210, 0.7)); /* Transparent gradient with more transparency */
+    color: #fff;
+    font-size: 18px;
+    text-transform: uppercase;
+}
+
+tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.1); /* More transparent rows */
+}
+
+tr:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.05); /* Even more transparent rows */
+}
+
+tr:hover {
+    background-color: rgba(255, 255, 255, 0.2); /* Slightly darker on hover */
+    cursor: pointer;
+}
+
+td {
+    color: #fff; /* White text for table records */
+}
+
+p {
+    text-align: center;
+    font-size: 18px;
+    color: #fff; /* White text for total votes */
+    font-weight: bold;
+}

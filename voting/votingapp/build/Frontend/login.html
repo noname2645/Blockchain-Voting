@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="login.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/votingusingblockchain-master/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/votingusingblockchain-master/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/votingusingblockchain-master/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+</head>
+
+<body>
+    <section>
+        <nav>
+            <img id="logo" src="newbv-Photoroom.png" alt="Failed">
+        </nav>
+
+        <div id="form-ui">
+            <form action="" method="post" id="form">
+                <div id="form-body">
+                    <div id="welcome-lines">
+                        Login
+                    </div>
+
+                    <div id="input-area">
+                        <div class="form-inp">
+                            <input id="email" placeholder="Email" type="email">
+                        </div>
+                        <div class="form-inp">
+                            <input id="password" placeholder="Password" type="password">
+                        </div>
+                    </div>
+                    <div id="submit-button-cvr">
+                        <button id="submit-button" type="submit">Login</button>
+                    </div>
+                    <div id="forgot-pass">
+                        <a href="register.html">Dont have an account?</a>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <div class='air air1'></div>
+        <div class='air air2'></div>
+        <div class='air air3'></div>
+        <div class='air air4'></div>
+    </section>
+
+    <div class="center">
+        <div class="check">
+            <i class="far fa-check-circle color"></i> &nbsp; &nbsp;
+            <span id="good">Nailed It!</span>
+        </div>
+        <div class="danger">
+            <i class="far fa-times-circle shine"></i>
+            &nbsp; &nbsp;
+            <span id="wrong">Wrong Answer</span>
+        </div>
+    </div>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap');
+    </style>
+    <script>
+        function showhome() {
+            window.location.href = "index.html";
+        }
+    </script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js';
+        import { getDatabase, ref, get, update } from 'https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js';
+        import { firebaseConfig } from './config.js';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        document.getElementById("form").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const successBox = document.getElementsByClassName('check')[0];
+            const errorBox = document.getElementsByClassName('danger')[0];
+
+            // Function to show notification with dynamic text
+            function showNotification(notification, message, duration, redirect = false) {
+                // Update the text content of the notification box
+                notification.querySelector("span").textContent = message; // Update the span content
+
+                // Show notification
+                notification.classList.add('active');
+                notification.style.display = 'flex';
+                notification.style.opacity = '1'; // Make sure it's visible
+
+                // Hide notification after the specified duration
+                setTimeout(() => {
+                    notification.style.opacity = '0'; // Fade out
+                    setTimeout(() => {
+                        notification.classList.remove('active');
+                        notification.style.display = 'none'; // Hide the notification after fade out
+
+                        // Optional redirect after notification
+                        if (redirect) {
+                            window.location.href = "index.html";
+                        }
+                    }, 500); // Wait for fade out animation
+                }, duration);
+            }
+
+            // Firebase login handling
+            signInWithEmailAndPassword(auth, email, password)
+                .then(async (userCredential) => {
+                    const user = userCredential.user;
+                    const userRef = ref(db, 'users/' + user.uid);
+                    const snapshot = await get(userRef);
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        if (userData.hasVoted) {
+                            // Custom message for already voted
+                            showNotification(successBox, "You have already cast your vote.", 3000, true);
+
+                        } else {
+                            // Custom message for successful login
+                            showNotification(successBox, "Login successful! Redirecting to vote...", 3000, true);
+                        }
+                    } else {
+                        showNotification(errorBox, "User data not found.", 3000, true);
+                    }
+                })
+                .catch((error) => {
+                    // Custom message for failed login
+                    showNotification(errorBox, "Login failed: " + error.message, 3000, false);
+                });
+        });
+
+
+    </script>
+</body>
+
+</html>
