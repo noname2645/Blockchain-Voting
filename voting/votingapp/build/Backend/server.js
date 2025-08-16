@@ -73,41 +73,67 @@ app.use(cors({
 }));
 app.use(express.json());
 
-try {
-  // First, let's get the private key and handle it properly
-  let privateKey = process.env.FIREBASE_PRIVATE_KEY;
-  
-  // Remove quotes if they exist and handle newlines properly
-  if (privateKey) {
-    privateKey = privateKey.replace(/^"(.*)"$/, '$1'); // Remove surrounding quotes
-    privateKey = privateKey.replace(/\\n/g, '\n'); // Convert \\n to actual newlines
-  }
-  
-  firebaseCredential = admin.credential.cert({
-    type: process.env.FIREBASE_TYPE,
-    project_id: process.env.FIREBASE_PROJECT_ID,
-    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-    private_key: privateKey,
-    client_email: process.env.FIREBASE_CLIENT_EMAIL,
-    client_id: process.env.FIREBASE_CLIENT_ID,
-    auth_uri: process.env.FIREBASE_AUTH_URI,
-    token_uri: process.env.FIREBASE_TOKEN_URI,
-    auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
-    client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
-    universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN,
-  });
+// ✅ Firebase credential setup - PROPERLY DECLARED
+let firebaseCredential;
 
-  console.log("✅ Firebase service account loaded from ENV");
+try {
+  console.log('🔥 Setting up Firebase credentials...');
+  
+  // Method 1: Try with environment variables first
+  if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+    console.log('📋 Using Firebase environment variables...');
+    
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+    
+    // Process the private key
+    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      privateKey = privateKey.slice(1, -1);
+    }
+    privateKey = privateKey.replace(/\\n/g, '\n');
+    
+    firebaseCredential = admin.credential.cert({
+      type: process.env.FIREBASE_TYPE || "service_account",
+      project_id: process.env.FIREBASE_PROJECT_ID,
+      private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+      private_key: privateKey,
+      client_email: process.env.FIREBASE_CLIENT_EMAIL,
+      client_id: process.env.FIREBASE_CLIENT_ID,
+      auth_uri: process.env.FIREBASE_AUTH_URI || "https://accounts.google.com/o/oauth2/auth",
+      token_uri: process.env.FIREBASE_TOKEN_URI || "https://oauth2.googleapis.com/token",
+      auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL || "https://www.googleapis.com/oauth2/v1/certs",
+      client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
+      universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN || "googleapis.com",
+    });
+    
+    console.log("✅ Firebase service account loaded from environment variables");
+    
+  } else {
+    // Method 2: Try with service account file
+    console.log('📄 Trying to load from service account file...');
+    const serviceAccountPath = path.join(__dirname, 'firebase-service-account.json');
+    
+    if (fs.existsSync(serviceAccountPath)) {
+      firebaseCredential = admin.credential.cert(serviceAccountPath);
+      console.log("✅ Firebase service account loaded from file");
+    } else {
+      throw new Error('Neither environment variables nor service account file found');
+    }
+  }
+
 } catch (error) {
   console.error("❌ Firebase credential setup failed:", error.message);
   console.error("🔍 Debug info:");
-  console.error("- Private key exists:", !!process.env.FIREBASE_PRIVATE_KEY);
-  console.error("- Private key starts with BEGIN:", process.env.FIREBASE_PRIVATE_KEY?.includes('BEGIN PRIVATE KEY'));
-  console.error("- Project ID:", process.env.FIREBASE_PROJECT_ID);
-  console.error("- Client email:", process.env.FIREBASE_CLIENT_EMAIL);
+  console.error("- FIREBASE_PRIVATE_KEY exists:", !!process.env.FIREBASE_PRIVATE_KEY);
+  console.error("- FIREBASE_CLIENT_EMAIL exists:", !!process.env.FIREBASE_CLIENT_EMAIL);
+  console.error("- FIREBASE_PROJECT_ID:", process.env.FIREBASE_PROJECT_ID);
+  
+  // Show first few chars of private key if it exists (for debugging)
+  if (process.env.FIREBASE_PRIVATE_KEY) {
+    console.error("- Private key preview:", process.env.FIREBASE_PRIVATE_KEY.substring(0, 50) + "...");
+  }
+  
   process.exit(1);
 }
-
 
 // ✅ Initialize Firebase Admin
 try {
@@ -148,14 +174,14 @@ const contractABI = [
 ];
 
 try {
-  console.log('🔄 Setting up Ethereum connection...');
+  console.log('🔌 Setting up Ethereum connection...');
   provider = new ethers.providers.JsonRpcProvider(process.env.BLAST_API_KEY);
   signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
   contract = new ethers.Contract(process.env.CONTRACT_ADDRESS, contractABI, signer);
   
   console.log('✅ Ethereum setup completed');
-  console.log('📍 Wallet address:', signer.address);
-  console.log('📍 Contract address:', process.env.CONTRACT_ADDRESS);
+  console.log('🔑 Wallet address:', signer.address);
+  console.log('🔑 Contract address:', process.env.CONTRACT_ADDRESS);
 } catch (error) {
   console.error('❌ Ethereum setup failed:', error.message);
   process.exit(1);
@@ -181,12 +207,10 @@ app.get('/', (req, res) => {
   res.json({ 
     message: '✅ Secure Voting Backend is running',
     timestamp: new Date().toISOString(),
-    // ✅ Only expose NON-sensitive information
     walletAddress: signer.address,
     contractAddress: process.env.CONTRACT_ADDRESS,
     firebaseProject: process.env.FIREBASE_PROJECT_ID,
     environment: process.env.NODE_ENV || 'development'
-    // ❌ NEVER expose: private keys, passwords, etc.
   });
 });
 
@@ -201,16 +225,15 @@ app.get('/health', async (req, res) => {
       chainId: network.chainId,
       network: network.name,
       blockNumber: blockNumber,
-      walletAddress: signer.address, // ✅ Public address - safe to expose
+      walletAddress: signer.address,
       balance: ethers.utils.formatEther(balance),
-      contractAddress: process.env.CONTRACT_ADDRESS, // ✅ Contract address - public
-      firebaseProject: process.env.FIREBASE_PROJECT_ID, // ✅ Project ID - public
+      contractAddress: process.env.CONTRACT_ADDRESS,
+      firebaseProject: process.env.FIREBASE_PROJECT_ID,
       timestamp: new Date().toISOString()
-      // ❌ NEVER expose private key or other secrets in health check
     });
   } catch (err) {
     console.error('Health check failed:', err);
-    res.status(500).json({ error: 'Health check failed' }); // Don't expose internal error details
+    res.status(500).json({ error: 'Health check failed' });
   }
 });
 
@@ -284,7 +307,6 @@ app.post('/vote', async (req, res) => {
 
     await db.collection('votes').doc(tx.hash).set(voteDoc);
 
-    // ✅ Send confirmation email using environment variables
     if (emailTransporter) {
       try {
         await emailTransporter.sendMail({
@@ -309,11 +331,10 @@ app.post('/vote', async (req, res) => {
 
   } catch (err) {
     console.error('Vote Error:', err.message);
-    res.status(500).json({ error: 'Voting failed' }); // Don't expose internal error details
+    res.status(500).json({ error: 'Voting failed' });
   }
 });
 
-// ✅ Other endpoints...
 app.get('/votes', async (req, res) => {
   try {
     const snapshot = await db.collection('votes').get();
